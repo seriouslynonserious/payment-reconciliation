@@ -9,15 +9,23 @@ from app.schemas import TransactionDetail, TransactionFilters, TransactionPage
 
 
 def list_transactions(session: Session, filters: TransactionFilters) -> TransactionPage:
+    repository = TransactionRepository(session)
     with read_transaction(session):
-        total, rows = TransactionRepository(session).list_page(filters)
-    return TransactionPage(items=rows, total=total, page=filters.page, page_size=filters.page_size,
-        total_pages=(total + filters.page_size - 1) // filters.page_size)
+        total, rows = repository.list_page(filters)
+    # Round up: 21 rows with page size 20 need two pages.
+    return TransactionPage(
+        items=rows,
+        total=total,
+        page=filters.page,
+        page_size=filters.page_size,
+        total_pages=(total + filters.page_size - 1) // filters.page_size,
+    )
 
 
 def get_transaction(session: Session, transaction_id: UUID) -> TransactionDetail | None:
+    repository = TransactionRepository(session)
     with read_transaction(session):
-        row = TransactionRepository(session).find_details(transaction_id)
+        row = repository.find_details(transaction_id)
         if row is None:
             return None
         events = EventRepository(session).history(transaction_id)

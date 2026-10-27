@@ -23,19 +23,37 @@ app.include_router(reconciliation_router)
 
 @app.exception_handler(EventConflict)
 async def event_conflict_handler(request: Request, exc: EventConflict) -> JSONResponse:
-    return JSONResponse(status_code=409, content={'detail': {'code': exc.code, 'message': str(exc)}})
+    return JSONResponse(
+        status_code=409, content={'detail': {'code': exc.code, 'message': str(exc)}}
+    )
 
 
 @app.exception_handler(DBAPIError)
 @app.exception_handler(PoolTimeoutError)
-async def database_error_handler(request: Request, exc: DBAPIError | PoolTimeoutError) -> JSONResponse:
+async def database_error_handler(
+    request: Request, exc: DBAPIError | PoolTimeoutError
+) -> JSONResponse:
     logger.exception('Database operation failed')
-    original = exc.orig if isinstance(exc, DBAPIError) else exc
-    transient = isinstance(original, (psycopg.OperationalError, psycopg.errors.QueryCanceled, PoolTimeoutError))
+    # SQLAlchemy wraps driver errors; inspect the original error.
+    original = exc
+    if isinstance(exc, DBAPIError):
+        original = exc.orig
+
+    if isinstance(
+        original,
+        (psycopg.OperationalError, psycopg.errors.QueryCanceled, PoolTimeoutError),
+    ):
+        status_code = 503
+        code = 'database_unavailable'
+        message = 'Database unavailable or busy.'
+    else:
+        status_code = 500
+        code = 'internal_error'
+        message = 'Internal server error.'
+
     return JSONResponse(
-        status_code=503 if transient else 500,
-        content={'detail': {'code': 'database_unavailable' if transient else 'internal_error',
-                            'message': 'Database unavailable or busy.' if transient else 'Internal server error.'}},
+        status_code=status_code,
+        content={'detail': {'code': code, 'message': message}},
     )
 
 

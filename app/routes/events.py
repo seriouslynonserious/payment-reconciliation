@@ -10,15 +10,27 @@ from app.services.ingestion import ingest_event
 router = APIRouter(tags=['Events'])
 
 
-@router.post('/events', response_model=IngestionResult, status_code=201, responses={
-    200: {'model': IngestionResult, 'description': 'Identical event already accepted'},
-    409: {'description': 'Event ID or transaction identity conflict'},
-    503: {'description': 'Database unavailable or busy; retry the same event ID'},
-})
+@router.post(
+    '/events',
+    response_model=IngestionResult,
+    status_code=201,
+    responses={
+        200: {
+            'model': IngestionResult,
+            'description': 'Identical event already accepted',
+        },
+        409: {'description': 'Event ID or transaction identity conflict'},
+        503: {'description': 'Database unavailable or busy; retry the same event ID'},
+    },
+)
 def create_event(
-    event: PaymentEvent, response: Response,
+    event: PaymentEvent,
+    response: Response,
     session: Annotated[Session, Depends(get_session)],
 ) -> IngestionResult:
     result = ingest_event(session, event)
-    response.status_code = 200 if result.duplicate else 201
+    if result.duplicate:
+        response.status_code = 200
+    else:
+        response.status_code = 201
     return result

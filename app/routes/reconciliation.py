@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, Query
 
 from app.config import Settings, get_settings
 from app.database import get_session
-from app.schemas import DiscrepancyFilters, DiscrepancyPage, ReconciliationSummary, SummaryFilters
+from app.schemas import (
+    DiscrepancyFilters,
+    DiscrepancyPage,
+    ReconciliationSummary,
+    SummaryFilters,
+)
 from app.services.reconciliation import get_discrepancies, get_summary
 
 router = APIRouter(prefix='/reconciliation', tags=['Reconciliation'])
@@ -14,7 +19,8 @@ Database = Annotated[Session, Depends(get_session)]
 
 @router.get('/summary', response_model=ReconciliationSummary)
 def reconciliation_summary(
-    filters: Annotated[SummaryFilters, Query()], session: Database,
+    filters: Annotated[SummaryFilters, Query()],
+    session: Database,
 ) -> ReconciliationSummary:
     """Group current transaction state by merchant, UTC first-event date, or payment status.
 
@@ -25,7 +31,8 @@ def reconciliation_summary(
 
 @router.get('/discrepancies', response_model=DiscrepancyPage)
 def reconciliation_discrepancies(
-    filters: Annotated[DiscrepancyFilters, Query()], session: Database,
+    filters: Annotated[DiscrepancyFilters, Query()],
+    session: Database,
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> DiscrepancyPage:
     """List inconsistent transactions with reasons; overdue means strictly beyond the grace period.

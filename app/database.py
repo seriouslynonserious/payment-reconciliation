@@ -21,7 +21,10 @@ def sqlalchemy_url(database_url: str):
 def get_engine() -> Engine:
     return create_engine(
         sqlalchemy_url(get_settings().database_url),
-        pool_pre_ping=True, pool_size=5, max_overflow=5, pool_timeout=5,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=5,
+        pool_timeout=5,
         connect_args={
             'connect_timeout': 5,
             'options': '-c timezone=UTC -c statement_timeout=10000 -c lock_timeout=5000',
@@ -39,8 +42,10 @@ def get_session() -> Iterator[Session]:
 def read_transaction(session: Session):
     """Use one consistent snapshot for count/page or details/history."""
     with session.begin():
-        session.connection(execution_options={
-            'isolation_level': 'REPEATABLE READ', 'postgresql_readonly': True,
-        })
+        session.connection(
+            execution_options={
+                'isolation_level': 'REPEATABLE READ',
+                'postgresql_readonly': True,
+            }
+        )
         yield
-
