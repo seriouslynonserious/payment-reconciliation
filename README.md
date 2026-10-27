@@ -3,8 +3,7 @@
 ## Current stage
 Implemented: PostgreSQL schema, `POST /events`, `GET /transactions`,
 `GET /transactions/{transaction_id}`, both reconciliation APIs, `/health`,
-interactive `/docs`, and PostgreSQL integration tests. The full sample dataset has been loaded and verified locally. The Postman collection is complete and verified. Public deployment remains
-to be completed.
+interactive `/docs`, and PostgreSQL integration tests. The full sample dataset has been loaded and verified locally. The Postman collection is complete and verified. Public deployment is live: https://setu-payment-reconciliation-xn99.onrender.com/docs.
 
 ## Structure
 - `app/routes/`: API endpoints.
@@ -339,10 +338,20 @@ transactions; it did not change existing sample transactions.
 
 See [deployment instructions](docs/DEPLOYMENT.md) for one-command Docker setup and
 Render deployment. Startup applies migrations and loads the sample once. Public
-hosting is still pending account/repository setup and live URL verification.
+hosting is live at https://setu-payment-reconciliation-xn99.onrender.com/docs.
 
 Latest automated validation: **77 tests passed**, including migration reruns,
 existing-schema protection, and repeatable sample loading.
 [Query measurements](docs/performance.md) record 14 real SQL queries against the
 loaded local database, with full plans in `docs/performance.json`. These are local
 query timings, not a production load benchmark.
+
+## Public demo
+
+- Swagger: https://setu-payment-reconciliation-xn99.onrender.com/docs
+- Health: https://setu-payment-reconciliation-xn99.onrender.com/health
+- Postman: import `postman/render.environment.json` and select that environment.
+
+The initial sample contains 3,800 transactions and 10,165 unique events. The
+public Postman verification adds four demo transactions and eight events. Free
+hosting may take about a minute to wake after inactivity.

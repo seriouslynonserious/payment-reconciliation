@@ -10,8 +10,8 @@ docker compose logs -f api
 ```
 
 First startup creates the schema and loads the supplied sample through the same
-validation and ingestion service as the API. Wait for Uvicorn to report startup
-complete. Open http://localhost:8001/docs and http://localhost:8001/health.
+validation and ingestion service as the API. The API opens before the initial import finishes; wait for the loader summary
+to confirm the full sample is available. A failed loader stops the container. Open http://localhost:8001/docs and http://localhost:8001/health.
 The database uses its own persistent Docker volume. Stop with `docker compose down`;
 the data is retained. This does not use the existing local PostgreSQL database.
 
@@ -58,6 +58,6 @@ continue using the README's direct Uvicorn command.
 - Run the Postman collection to check ingestion, exact retries, conflicts, filters,
   and validation. It adds isolated synthetic demo records.
 
-No public deployment URL has been verified yet. The API is an unauthenticated
+Public API verified at https://setu-payment-reconciliation-xn99.onrender.com/docs. The API is an unauthenticated
 assignment demo containing synthetic data; production authentication is outside
 this implementation.
