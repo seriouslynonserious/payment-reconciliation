@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: setu-payment-reconciliation
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: setu-reconciliation-db
+          property: connectionString
+      - key: LOAD_SAMPLE_DATA
+        value: "true"
+      - key: SETTLEMENT_GRACE_HOURS
+        value: "24"
+databases:
+  - name: setu-reconciliation-db
+    databaseName: reconciliation
+    user: reconciliation
+    plan: free
+    region: singapore
+    postgresMajorVersion: "18"
+    ipAllowList: []

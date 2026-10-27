@@ -1,0 +1,1291 @@
+{
+  "info": {
+    "_postman_id": "6510a36d-5dea-449c-9359-b38082e51982",
+    "name": "Setu Payment Reconciliation \u2014 API Demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the entire collection in order. The first request creates fresh IDs and a dedicated demo merchant. Each run adds four synthetic transactions and eight unique events; existing data is preserved. Set base_url to your local or public API (no trailing slash). Covers all five required APIs plus health, validation, idempotency, conflicts and reconciliation. No authentication is configured for this synthetic assignment demo."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "merchant_id",
+      "value": "postman_demo",
+      "type": "string"
+    },
+    {
+      "key": "merchant_name",
+      "value": "Postman Demo Shop",
+      "type": "string"
+    },
+    {
+      "key": "as_of",
+      "value": "2026-01-10T00:00:00Z",
+      "type": "string"
+    },
+    {
+      "key": "success_tx",
+      "value": "c61d0ba0-a447-4c0c-9fe0-8e9891a3ceba",
+      "type": "string"
+    },
+    {
+      "key": "failed_tx",
+      "value": "587937bb-af35-4972-9416-dfcc9414566c",
+      "type": "string"
+    },
+    {
+      "key": "overdue_tx",
+      "value": "feb8f191-975a-4919-a6f0-b72ae8bb09d6",
+      "type": "string"
+    },
+    {
+      "key": "conflict_tx",
+      "value": "34d4a53d-8d63-4347-b73b-82e0d65cf5f9",
+      "type": "string"
+    },
+    {
+      "key": "missing_tx",
+      "value": "71d0394d-4f3c-406b-925e-33d68354c546",
+      "type": "string"
+    },
+    {
+      "key": "initiated_event",
+      "value": "a716d343-8800-4e3d-93c6-2e7a617c232c",
+      "type": "string"
+    },
+    {
+      "key": "processed_event",
+      "value": "6960cc1a-f102-4cfb-9b03-60c61cfda976",
+      "type": "string"
+    },
+    {
+      "key": "settled_event",
+      "value": "4bf152d5-e7aa-4a04-a340-8a675a9b1166",
+      "type": "string"
+    },
+    {
+      "key": "failed_event",
+      "value": "2ba9c1e1-dd91-49e0-8faf-4297e9cc4c62",
+      "type": "string"
+    },
+    {
+      "key": "failed_settled_event",
+      "value": "144e79ff-93da-4208-a543-4ed480ba23cb",
+      "type": "string"
+    },
+    {
+      "key": "overdue_event",
+      "value": "c4822bac-2d5d-4dec-ab08-7d5bf61a0a9a",
+      "type": "string"
+    },
+    {
+      "key": "conflict_processed_event",
+      "value": "bfd6e19c-36c2-4c7e-b761-9943bcdd8244",
+      "type": "string"
+    },
+    {
+      "key": "conflict_failed_event",
+      "value": "60eb94fc-d841-4a93-baa0-6fd9f6df4be2",
+      "type": "string"
+    },
+    {
+      "key": "identity_event",
+      "value": "01ff6327-dba2-4e92-94d2-c6d296e1451f",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 \u2014 Start a fresh demo run",
+      "item": [
+        {
+          "name": "Health and initialize demo variables",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Run this request first. It generates new IDs without deleting any data.",
+                  "pm.collectionVariables.set(\"merchant_id\", \"postman_\" + pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"success_tx\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"failed_tx\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"overdue_tx\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"conflict_tx\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"missing_tx\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"initiated_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"processed_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"settled_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"failed_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"failed_settled_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"overdue_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"conflict_processed_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"conflict_failed_event\", pm.variables.replaceIn(\"{{$guid}}\"));",
+                  "pm.collectionVariables.set(\"identity_event\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Database ready\", () => { pm.expect(body.status).to.eql(\"ok\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 \u2014 Successful payment and idempotency",
+      "item": [
+        {
+          "name": "Initiate payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{initiated_event}}\",\n  \"event_type\": \"payment_initiated\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"initiated\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });",
+                  "pm.test(\"New event\", () => { pm.expect(body.duplicate).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Process payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{processed_event}}\",\n  \"event_type\": \"payment_processed\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:05:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Settle payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{settled_event}}\",\n  \"event_type\": \"settled\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T11:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"settled\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Retry identical settlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{settled_event}}\",\n  \"event_type\": \"settled\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T11:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"settled\"); });",
+                  "pm.test(\"Duplicate acknowledged\", () => { pm.expect(body.duplicate).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Same event ID with changed amount \u2192 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{settled_event}}\",\n  \"event_type\": \"settled\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"600.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T11:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Event conflict\", () => { pm.expect(body.detail.code).to.eql(\"event_id_conflict\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "New event with changed transaction amount \u2192 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{identity_event}}\",\n  \"event_type\": \"settled\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"600.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T11:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Transaction identity protected\", () => { pm.expect(body.detail.code).to.eql(\"transaction_identity_conflict\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Inspect successful transaction and history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{success_tx}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{success_tx}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"settled\"); });",
+                  "pm.test(\"History contains three unique events\", () => { pm.expect(body.events).to.have.lengthOf(3); pm.expect(new Set(body.events.map(e => e.event_id)).size).to.eql(3); });",
+                  "pm.test(\"Amount and timestamps preserved\", () => { pm.expect(body.amount).to.eql(\"500.00\"); pm.expect(body.processed_at).to.eql(\"2026-01-01T10:05:00Z\"); pm.expect(body.settled_at).to.eql(\"2026-01-01T11:00:00Z\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 \u2014 Discrepancy examples",
+      "item": [
+        {
+          "name": "Record failed payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{failed_event}}\",\n  \"event_type\": \"payment_failed\",\n  \"transaction_id\": \"{{failed_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"failed\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Record settlement for failed payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{failed_settled_event}}\",\n  \"event_type\": \"settled\",\n  \"transaction_id\": \"{{failed_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T12:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"failed\"); pm.expect(body.settlement_status).to.eql(\"settled\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Record old processed payment without settlement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{overdue_event}}\",\n  \"event_type\": \"payment_processed\",\n  \"transaction_id\": \"{{overdue_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Record processed event for conflict example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{conflict_processed_event}}\",\n  \"event_type\": \"payment_processed\",\n  \"transaction_id\": \"{{conflict_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"processed\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Record contradictory failed event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{conflict_failed_event}}\",\n  \"event_type\": \"payment_failed\",\n  \"transaction_id\": \"{{conflict_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"500.00\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:10:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected transaction state\", () => { pm.expect(body.payment_status).to.eql(\"conflict\"); pm.expect(body.settlement_status).to.eql(\"pending\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 \u2014 List, filter, sort, and paginate",
+      "item": [
+        {
+          "name": "List four demo transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?merchant_id={{merchant_id}}&page_size=100",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "page_size",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"One row per transaction\", () => { pm.expect(body.total).to.eql(4); pm.expect(body.items).to.have.lengthOf(4); pm.expect(new Set(body.items.map(t => t.transaction_id)).size).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Filter processed payments awaiting settlement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?merchant_id={{merchant_id}}&status=processed&settlement_status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "status",
+                  "value": "processed"
+                },
+                {
+                  "key": "settlement_status",
+                  "value": "pending"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Only overdue demo payment matches\", () => { pm.expect(body.total).to.eql(1); pm.expect(body.items[0].transaction_id).to.eql(pm.collectionVariables.get(\"overdue_tx\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Date range, amount sorting, and second page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?merchant_id={{merchant_id}}&date_from=2026-01-01T00%3A00%3A00Z&date_to=2026-01-02T00%3A00%3A00Z&sort_by=amount&sort_order=asc&page=2&page_size=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-01-01T00:00:00Z"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-01-02T00:00:00Z"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "amount"
+                },
+                {
+                  "key": "sort_order",
+                  "value": "asc"
+                },
+                {
+                  "key": "page",
+                  "value": "2"
+                },
+                {
+                  "key": "page_size",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Pagination metadata\", () => { pm.expect(body.total).to.eql(4); pm.expect(body.page).to.eql(2); pm.expect(body.total_pages).to.eql(2); pm.expect(body.items).to.have.lengthOf(2); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Missing transaction \u2192 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{missing_tx}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{missing_tx}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Clear not-found code\", () => { pm.expect(body.detail.code).to.eql(\"transaction_not_found\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 \u2014 Reconciliation summary",
+      "item": [
+        {
+          "name": "Summary by merchant",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/summary?merchant_id={{merchant_id}}&group_by=merchant",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "group_by",
+                  "value": "merchant"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Four transactions, no duplicate counting\", () => { pm.expect(body.total).to.eql(1); const g=body.items[0]; pm.expect(g.transaction_count).to.eql(4); pm.expect(g.processed_count).to.eql(2); pm.expect(g.failed_count).to.eql(1); pm.expect(g.conflict_count).to.eql(1); pm.expect(g.settled_count).to.eql(2); pm.expect(g.pending_settlement_count).to.eql(1); pm.expect(g.total_amount).to.eql(\"2000.00\"); pm.expect(g.settled_amount).to.eql(\"1000.00\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Summary by UTC date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/summary?merchant_id={{merchant_id}}&group_by=date",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "group_by",
+                  "value": "date"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Four transactions, no duplicate counting\", () => { pm.expect(body.total).to.eql(1); const g=body.items[0]; pm.expect(g.transaction_count).to.eql(4); pm.expect(g.processed_count).to.eql(2); pm.expect(g.failed_count).to.eql(1); pm.expect(g.conflict_count).to.eql(1); pm.expect(g.settled_count).to.eql(2); pm.expect(g.pending_settlement_count).to.eql(1); pm.expect(g.total_amount).to.eql(\"2000.00\"); pm.expect(g.settled_amount).to.eql(\"1000.00\"); });",
+                  "pm.test(\"Correct date cohort\", () => { pm.expect(body.items[0].group_value).to.eql(\"2026-01-01\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Summary by payment status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/summary?merchant_id={{merchant_id}}&group_by=status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "group_by",
+                  "value": "status"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Three payment-state groups\", () => { pm.expect(body.total).to.eql(3); pm.expect(body.items.reduce((sum,g)=>sum+g.transaction_count,0)).to.eql(4); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 \u2014 Reconciliation discrepancies",
+      "item": [
+        {
+          "name": "All three demo discrepancies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/discrepancies?merchant_id={{merchant_id}}&as_of={{as_of}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "discrepancies"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "as_of",
+                  "value": "{{as_of}}"
+                }
+              ]
+            },
+            "description": "Assumes the documented 24-hour settlement grace period. as_of controls aging only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Expected discrepancies\", () => { pm.expect(body.total).to.eql(3); const reasons=body.items.flatMap(t=>t.reasons); pm.expect(reasons).to.have.members([\"overdue_settlement\",\"settled_failed_payment\",\"conflicting_payment_events\"]); pm.expect(body.items.map(t=>t.transaction_id)).not.to.include(pm.collectionVariables.get(\"success_tx\")); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Filter: overdue_settlement",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/discrepancies?merchant_id={{merchant_id}}&as_of={{as_of}}&reason=overdue_settlement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "discrepancies"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "as_of",
+                  "value": "{{as_of}}"
+                },
+                {
+                  "key": "reason",
+                  "value": "overdue_settlement"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Correct transaction and reason\", () => { pm.expect(body.total).to.eql(1); pm.expect(body.items[0].transaction_id).to.eql(pm.collectionVariables.get(\"overdue_tx\")); pm.expect(body.items[0].reasons).to.include(\"overdue_settlement\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Filter: settled_failed_payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/discrepancies?merchant_id={{merchant_id}}&as_of={{as_of}}&reason=settled_failed_payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "discrepancies"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "as_of",
+                  "value": "{{as_of}}"
+                },
+                {
+                  "key": "reason",
+                  "value": "settled_failed_payment"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Correct transaction and reason\", () => { pm.expect(body.total).to.eql(1); pm.expect(body.items[0].transaction_id).to.eql(pm.collectionVariables.get(\"failed_tx\")); pm.expect(body.items[0].reasons).to.include(\"settled_failed_payment\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Filter: conflicting_payment_events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reconciliation/discrepancies?merchant_id={{merchant_id}}&as_of={{as_of}}&reason=conflicting_payment_events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reconciliation",
+                "discrepancies"
+              ],
+              "query": [
+                {
+                  "key": "merchant_id",
+                  "value": "{{merchant_id}}"
+                },
+                {
+                  "key": "as_of",
+                  "value": "{{as_of}}"
+                },
+                {
+                  "key": "reason",
+                  "value": "conflicting_payment_events"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Correct transaction and reason\", () => { pm.expect(body.total).to.eql(1); pm.expect(body.items[0].transaction_id).to.eql(pm.collectionVariables.get(\"conflict_tx\")); pm.expect(body.items[0].reasons).to.include(\"conflicting_payment_events\"); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 \u2014 Validation errors",
+      "item": [
+        {
+          "name": "Invalid amount \u2192 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "events"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": \"{{initiated_event}}\",\n  \"event_type\": \"payment_initiated\",\n  \"transaction_id\": \"{{success_tx}}\",\n  \"merchant_id\": \"{{merchant_id}}\",\n  \"merchant_name\": \"{{merchant_name}}\",\n  \"amount\": \"-1\",\n  \"currency\": \"INR\",\n  \"timestamp\": \"2026-01-01T10:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Amount rejected\", () => { pm.expect(body.detail.some(e=>e.loc.includes(\"amount\"))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Invalid page size \u2192 422",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?page_size=101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page_size",
+                  "value": "101"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Page size rejected\", () => { pm.expect(body.detail.some(e=>e.loc.includes(\"page_size\"))).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}
