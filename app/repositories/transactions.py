@@ -55,16 +55,18 @@ class TransactionRepository:
         )
         if for_update:
             statement = statement.with_for_update()
-        return self.session.execute(
-            statement.execution_options(populate_existing=True)
-        ).scalar_one()
+        # Refresh a cached object after waiting for another request's lock.
+        statement = statement.execution_options(populate_existing=True)
+        result = self.session.execute(statement)
+        return result.scalar_one()
 
     def update_state(self, transaction_id: UUID, values: dict) -> None:
-        self.session.execute(
+        statement = (
             update(Transaction)
             .where(Transaction.transaction_id == transaction_id)
             .values(**values, updated_at=func.clock_timestamp())
         )
+        self.session.execute(statement)
 
     def find_details(self, transaction_id: UUID):
         statement = (
@@ -72,7 +74,8 @@ class TransactionRepository:
             .join(Merchant)
             .where(Transaction.transaction_id == transaction_id)
         )
-        return self.session.execute(statement).mappings().one_or_none()
+        result = self.session.execute(statement)
+        return result.mappings().one_or_none()
 
     def list_page(self, filters: TransactionFilters):
         conditions = []
@@ -106,4 +109,6 @@ class TransactionRepository:
             .limit(filters.page_size)
             .offset((filters.page - 1) * filters.page_size)
         )
-        return total, self.session.execute(statement).mappings().all()
+        result = self.session.execute(statement)
+        rows = result.mappings().all()
+        return total, rows

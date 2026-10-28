@@ -94,7 +94,9 @@ class ReconciliationRepository:
             .limit(filters.page_size)
             .offset((filters.page - 1) * filters.page_size)
         )
-        return total, self.session.execute(statement).mappings().all()
+        result = self.session.execute(statement)
+        rows = result.mappings().all()
+        return total, rows
 
     def discrepancy_page(
         self, filters: DiscrepancyFilters, evaluated_at: datetime, grace_hours: int
@@ -152,4 +154,6 @@ class ReconciliationRepository:
             .limit(filters.page_size)
             .offset((filters.page - 1) * filters.page_size)
         )
-        return total, self.session.execute(statement).mappings().all()
+        result = self.session.execute(statement)
+        rows = result.mappings().all()
+        return total, rows

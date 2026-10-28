@@ -22,15 +22,14 @@ class EventRepository:
         return self.session.get(Event, event_id)
 
     def add(self, event: PaymentEvent, payload: dict) -> None:
-        self.session.add(
-            Event(
-                event_id=event.event_id,
-                transaction_id=event.transaction_id,
-                event_type=event.event_type,
-                event_timestamp=event.timestamp,
-                payload=payload,
-            )
+        record = Event(
+            event_id=event.event_id,
+            transaction_id=event.transaction_id,
+            event_type=event.event_type,
+            event_timestamp=event.timestamp,
+            payload=payload,
         )
+        self.session.add(record)
         # Ensure the aggregate below includes this new event; this does not commit.
         self.session.flush()
 
@@ -48,7 +47,8 @@ class EventRepository:
             .filter(Event.event_type == 'settled')
             .label('settled_at'),
         ).where(Event.transaction_id == transaction_id)
-        return self.session.execute(statement).mappings().one()
+        result = self.session.execute(statement)
+        return result.mappings().one()
 
     def history(self, transaction_id: UUID):
         statement = select(
@@ -58,10 +58,6 @@ class EventRepository:
             Event.received_at,
             Event.payload,
         ).where(Event.transaction_id == transaction_id)
-        return (
-            self.session.execute(
-                statement.order_by(Event.event_timestamp, Event.event_id)
-            )
-            .mappings()
-            .all()
-        )
+        statement = statement.order_by(Event.event_timestamp, Event.event_id)
+        result = self.session.execute(statement)
+        return result.mappings().all()
